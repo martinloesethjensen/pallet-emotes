@@ -2,25 +2,18 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{Currency, OnUnbalanced, ReservableCurrency};
+use frame_support::traits::{Currency, ReservableCurrency};
 pub use pallet::*;
-use sp_runtime::traits::{StaticLookup, Zero};
 use sp_std::prelude::*;
 
 type BalanceOf<T> =
     <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-type NegativeImbalanceOf<T> = <<T as Config>::Currency as Currency<
-    <T as frame_system::Config>::AccountId,
->>::NegativeImbalance;
 
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    use frame_support::{
-        pallet_prelude::*,
-        traits::{EnsureOrigin, Get},
-    };
-    use frame_system::{ pallet_prelude::*};
+    use frame_support::pallet_prelude::*;
+    use frame_system::pallet_prelude::*;
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
@@ -29,24 +22,6 @@ pub mod pallet {
 
         /// The currency trait.
         type Currency: ReservableCurrency<Self::AccountId>;
-
-        /// Reservation fee.
-        #[pallet::constant]
-        type ReservationFee: Get<BalanceOf<Self>>;
-
-        /// What to do with slashed funds.
-        type Slashed: OnUnbalanced<NegativeImbalanceOf<Self>>;
-
-        /// The origin which may forcibly set or remove a name. Root can always do this.
-        type ForceOrigin: EnsureOrigin<Self::Origin>;
-
-        /// The minimum length a name may be.
-        #[pallet::constant]
-        type MinLength: Get<u32>;
-
-        /// The maximum length a name may be.
-        #[pallet::constant]
-        type MaxLength: Get<u32>;
     }
 
     #[pallet::event]
