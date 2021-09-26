@@ -72,7 +72,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(50_000_000)]
-        pub fn test(origin: OriginFor<T>) -> DispatchResult {
+        pub fn hello_rmrk(origin: OriginFor<T>) -> DispatchResult {
             Ok(())
         }
     }
