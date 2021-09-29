@@ -42,7 +42,7 @@ git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-09+1'
 version = '4.0.0-dev'
 
-[dev-dependencies]
+#[dev-dependencies]
 
 [dependencies.pallet-balances]
 default-features = false
@@ -61,6 +61,7 @@ version = '4.0.0-dev'
 default = ["std"]
 std = [
   "codec/std",
+  'pallet-balances/std',
   "scale-info/std",
   "sp-std/std",
   "sp-io/std",
