@@ -18,7 +18,7 @@ pub fn get_bytewise_emote(emote: &Emoji) -> Option<u8> {
     };
 }
 
-pub fn get_emote_from_bitewise(byte: u8) -> Option<Emoji> {
+pub fn get_emote_from_bytewise(byte: u8) -> Option<Emoji> {
     let mapping = get_mapping();
     let result = mapping.iter().find(|(key, &val)| return val == byte);
 
