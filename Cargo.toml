@@ -42,6 +42,9 @@ git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-09+1'
 version = '4.0.0-dev'
 
+[dependencies.emojis]
+version = "0.1.2"
+
 #[dev-dependencies]
 
 [dependencies.pallet-balances]

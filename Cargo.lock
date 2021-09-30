@@ -433,6 +433,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
+name = "emojis"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbf85aeacc72b7b5d9e78b39399562a2846566936e41a6f59f9d96b3fa7c4f96"
+dependencies = [
+ "strsim",
+]
+
+[[package]]
 name = "environmental"
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1191,6 +1200,7 @@ dependencies = [
 name = "pallet-emotes"
 version = "0.1.0"
 dependencies = [
+ "emojis",
  "frame-support",
  "frame-system",
  "pallet-balances",
@@ -2189,6 +2199,12 @@ dependencies = [
  "num-traits",
  "rand 0.8.4",
 ]
+
+[[package]]
+name = "strsim"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "substrate-bip39"
