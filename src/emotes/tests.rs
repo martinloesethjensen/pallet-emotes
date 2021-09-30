@@ -11,7 +11,15 @@ mod tests {
         let result = get_emote(input);
         assert_eq!(result.is_none(), true)
     }
-    
+
+    #[test]
+    fn get_emote__returns_none_if_emoji_is_not_supported() {
+        let input = "👨🏾‍🦱";
+
+        let result = get_emote(input);
+        assert_eq!(result.is_none(), true)
+    }
+
     #[test]
     fn get_emote__returns_proper_emoji() {
         let input = "🚀";
