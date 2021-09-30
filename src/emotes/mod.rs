@@ -6,7 +6,7 @@ mod tests;
 pub mod emotes {
     use emojis::Emoji;
 
-    use super::mapping::get_byte_wise_emote;
+    use super::mapping::get_bytewise_emote;
 
     //This function takes a string as input argmuent and returns and Emoji type if the input is valid
     pub fn get_emote(input: &str) -> Option<Emoji> {
@@ -25,8 +25,10 @@ pub mod emotes {
         //emoji_is_supported(&emoji);
     }
 
+    
+
     fn emoji_is_supported(emoji: &Emoji) -> bool {
-        match get_byte_wise_emote(emoji.to_string()) {
+        match get_bytewise_emote(emoji) {
             Some(_) => true,
             None => false,
         }
