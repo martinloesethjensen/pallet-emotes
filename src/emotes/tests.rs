@@ -53,10 +53,7 @@ mod tests {
         let result = get_emotes_from_decimal(4).unwrap_or("0".to_string());
         println!("{}", result);
 
-        let a = 1; // 001
-        let b = 4; // 100
-
-        let c = b & a; // 010
-        println!("{:b}", c);
+        let result = get_emotes_from_decimal(10).unwrap_or("0".to_string());
+        println!("{}", result);
     }
 }

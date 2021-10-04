@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use emojis::Emoji;
 
-fn populate_emotijs() -> HashMap<String, String> {
+// TODO: store binary instead of String as key
+fn populate_emojis() -> HashMap<String, String> {
     let mut mapping = HashMap::new();
     mapping.insert(String::from("1"), String::from("1f600"));
     mapping.insert(String::from("10"), String::from("1f603"));
@@ -13,7 +14,7 @@ fn populate_emotijs() -> HashMap<String, String> {
 }
 
 pub fn get_emotes_from_decimal(decimal: u128) -> Option<String> {
-    let mapping = populate_emotijs();
+    let mapping = populate_emojis();
 
     // decimal to binary representation
     let binary = format!("{:b}", decimal);
@@ -23,19 +24,18 @@ pub fn get_emotes_from_decimal(decimal: u128) -> Option<String> {
 
     let mut emotes: Vec<String> = Vec::new();
 
-    let mut curr = 0;
-
     let mut lookup = String::new();
 
-    // Reverse lookup with char
-    for bit in binary.chars().rev() {
+    let reversed_binary = binary.chars().rev();
+    for (i, bit) in reversed_binary.enumerate() {
         match bit {
             '1' => {
-                println!("Do smth")
+                let binary_query = format!("1{}", lookup);
+                println!("{}", binary_query);
             }
-            _ => println!("idk"),
+            _ => {}
         }
-        curr += 1;
+        lookup.push('0');
     }
 
     match mapping.get(&binary) {
