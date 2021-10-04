@@ -1,111 +1,195 @@
-// use super::*;
+//! Unit tests for the non-fungible-token module.
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::{self as pallet_emotes, emotes::emotes::get_emotes};
-//     use frame_support::{
-//         assert_ok, ord_parameter_types, parameter_types, serde::de::value, traits::GenesisBuild,
-//     };
-//     use frame_system::EnsureSignedBy;
-//     use sp_core::H256;
-//     use sp_runtime::{
-//         testing::Header,
-//         traits::{BadOrigin, BlakeTwo256, IdentityLookup},
-//     };
+#![cfg(test)]
 
-//     type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-//     type Block = frame_system::mocking::MockBlock<Test>;
+use super::*;
+use frame_support::{assert_noop, assert_ok};
+use mock::*;
 
-//     frame_support::construct_runtime!(
-//         pub enum Test where
-//         Block = Block,
-//         NodeBlock = Block,
-//         UncheckedExtrinsic = UncheckedExtrinsic,
-//         {
-//             System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-//             Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-//             Emotes: pallet_emotes::{Pallet, Call, Storage, Event<T>},
-//         }
-//     );
+#[test]
+fn create_class_should_work() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+    });
+}
 
-//     parameter_types! {
-//         pub const BlockHashCount: u64 = 250;
-//         pub BlockWeights: frame_system::limits::BlockWeights =
-//             frame_system::limits::BlockWeights::simple_max(1024);
-//     }
+#[test]
+fn create_class_should_fail() {
+    ExtBuilder::default().build().execute_with(|| {
+        NextClassId::<Runtime>::mutate(|id| *id = <Runtime as Config>::ClassId::max_value());
+        assert_noop!(
+			NonFungibleTokenModule::create_class(&ALICE, vec![1], ()),
+			Error::<Runtime>::NoAvailableClassId
+		);
+    });
+}
 
-//     impl frame_system::Config for Test {
-//         type BaseCallFilter = frame_support::traits::Everything;
-//         type BlockWeights = ();
-//         type BlockLength = ();
-//         type DbWeight = ();
-//         type Origin = Origin;
-//         type Index = u64;
-//         type BlockNumber = u64;
-//         type Hash = H256;
-//         type Call = Call;
-//         type Hashing = BlakeTwo256;
-//         type AccountId = u64;
-//         type Lookup = IdentityLookup<Self::AccountId>;
-//         type Header = Header;
-//         type Event = Event;
-//         type BlockHashCount = BlockHashCount;
-//         type Version = ();
-//         type PalletInfo = PalletInfo;
-//         type AccountData = pallet_balances::AccountData<u64>;
-//         type OnNewAccount = ();
-//         type OnKilledAccount = ();
-//         type SystemWeightInfo = ();
-//         type SS58Prefix = ();
-//         type OnSetCode = ();
-//     }
+#[test]
+fn mint_should_work() {
+    ExtBuilder::default().build().execute_with(|| {
+        let next_class_id = NonFungibleTokenModule::next_class_id();
+        assert_eq!(next_class_id, CLASS_ID);
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_eq!(NonFungibleTokenModule::next_token_id(CLASS_ID), 0);
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+        assert_eq!(NonFungibleTokenModule::next_token_id(CLASS_ID), 1);
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+        assert_eq!(NonFungibleTokenModule::next_token_id(CLASS_ID), 2);
 
-//     parameter_types! {
-//         pub const ExistentialDeposit: u64 = 1;
-//     }
+        let next_class_id = NonFungibleTokenModule::next_class_id();
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_eq!(NonFungibleTokenModule::next_token_id(next_class_id), 0);
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, next_class_id, vec![1], ()));
+        assert_eq!(NonFungibleTokenModule::next_token_id(next_class_id), 1);
 
-//     impl pallet_balances::Config for Test {
-//         type MaxLocks = ();
-//         type MaxReserves = ();
-//         type ReserveIdentifier = [u8; 8];
-//         type Balance = u64;
-//         type Event = Event;
-//         type DustRemoval = ();
-//         type ExistentialDeposit = ExistentialDeposit;
-//         type AccountStore = System;
-//         type WeightInfo = ();
-//     }
+        assert_eq!(NonFungibleTokenModule::next_token_id(CLASS_ID), 2);
+    });
+}
 
-//     parameter_types! {
-//         pub const ReservationFee: u64 = 2;
-//         pub const MinLength: u32 = 3;
-//         pub const MaxLength: u32 = 16;
-//     }
-//     ord_parameter_types! {
-//         pub const One: u64 = 1;
-//     }
+#[test]
+fn mint_should_fail() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        Classes::<Runtime>::mutate(CLASS_ID, |class_info| {
+            class_info.as_mut().unwrap().total_issuance = <Runtime as Config>::TokenId::max_value();
+        });
+        assert_noop!(
+			NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()),
+			ArithmeticError::Overflow,
+		);
 
-//     impl Config for Test {
-//         type Currency = Balances;
-//         type Event = Event;
-//     }
-//     fn new_test_ext() -> sp_io::TestExternalities {
-//         let mut t = frame_system::GenesisConfig::default()
-//             .build_storage::<Test>()
-//             .unwrap();
-//         pallet_balances::GenesisConfig::<Test> {
-//             balances: vec![(1, 10), (2, 10)],
-//         }
-//         .assimilate_storage(&mut t)
-//         .unwrap();
-//         t.into()
-//     }
+        NextTokenId::<Runtime>::mutate(CLASS_ID, |id| *id = <Runtime as Config>::TokenId::max_value());
+        assert_noop!(
+			NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()),
+			Error::<Runtime>::NoAvailableTokenId
+		);
+    });
+}
 
-//     #[test]
-//     fn test() {
-//         get_emotes("foo");
-//         println!("it works");
-//         assert_eq!(true, true);
-//     }
-// }
+#[test]
+fn transfer_should_work() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::transfer(&BOB, &BOB, (CLASS_ID, TOKEN_ID)));
+        assert_ok!(NonFungibleTokenModule::transfer(&BOB, &ALICE, (CLASS_ID, TOKEN_ID)));
+        assert_ok!(NonFungibleTokenModule::transfer(&ALICE, &BOB, (CLASS_ID, TOKEN_ID)));
+        assert!(NonFungibleTokenModule::is_owner(&BOB, (CLASS_ID, TOKEN_ID)));
+    });
+}
+
+#[test]
+fn transfer_should_fail() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+        assert_noop!(
+			NonFungibleTokenModule::transfer(&BOB, &ALICE, (CLASS_ID, TOKEN_ID_NOT_EXIST)),
+			Error::<Runtime>::TokenNotFound
+		);
+        assert_noop!(
+			NonFungibleTokenModule::transfer(&ALICE, &BOB, (CLASS_ID, TOKEN_ID)),
+			Error::<Runtime>::NoPermission
+		);
+        assert_noop!(
+			NonFungibleTokenModule::mint(&BOB, CLASS_ID_NOT_EXIST, vec![1], ()),
+			Error::<Runtime>::ClassNotFound
+		);
+        assert_noop!(
+			NonFungibleTokenModule::transfer(&ALICE, &ALICE, (CLASS_ID, TOKEN_ID)),
+			Error::<Runtime>::NoPermission
+		);
+    });
+}
+
+#[test]
+fn burn_should_work() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::burn(&BOB, (CLASS_ID, TOKEN_ID)));
+    });
+}
+
+#[test]
+fn burn_should_fail() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+        assert_noop!(
+			NonFungibleTokenModule::burn(&BOB, (CLASS_ID, TOKEN_ID_NOT_EXIST)),
+			Error::<Runtime>::TokenNotFound
+		);
+
+        assert_noop!(
+			NonFungibleTokenModule::burn(&ALICE, (CLASS_ID, TOKEN_ID)),
+			Error::<Runtime>::NoPermission
+		);
+    });
+
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+
+        Classes::<Runtime>::mutate(CLASS_ID, |class_info| {
+            class_info.as_mut().unwrap().total_issuance = 0;
+        });
+        assert_noop!(
+			NonFungibleTokenModule::burn(&BOB, (CLASS_ID, TOKEN_ID)),
+			ArithmeticError::Overflow,
+		);
+    });
+}
+
+#[test]
+fn destroy_class_should_work() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::burn(&BOB, (CLASS_ID, TOKEN_ID)));
+        assert_ok!(NonFungibleTokenModule::destroy_class(&ALICE, CLASS_ID));
+        assert!(!Classes::<Runtime>::contains_key(CLASS_ID));
+        assert!(!NextTokenId::<Runtime>::contains_key(CLASS_ID));
+    });
+}
+
+#[test]
+fn destroy_class_should_fail() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_ok!(NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1], ()));
+        assert_noop!(
+			NonFungibleTokenModule::destroy_class(&ALICE, CLASS_ID_NOT_EXIST),
+			Error::<Runtime>::ClassNotFound
+		);
+
+        assert_noop!(
+			NonFungibleTokenModule::destroy_class(&BOB, CLASS_ID),
+			Error::<Runtime>::NoPermission
+		);
+
+        assert_noop!(
+			NonFungibleTokenModule::destroy_class(&ALICE, CLASS_ID),
+			Error::<Runtime>::CannotDestroyClass
+		);
+
+        assert_ok!(NonFungibleTokenModule::burn(&BOB, (CLASS_ID, TOKEN_ID)));
+        assert_ok!(NonFungibleTokenModule::destroy_class(&ALICE, CLASS_ID));
+        assert!(!Classes::<Runtime>::contains_key(CLASS_ID));
+    });
+}
+
+#[test]
+fn exceeding_max_metadata_should_fail() {
+    ExtBuilder::default().build().execute_with(|| {
+        assert_noop!(
+			NonFungibleTokenModule::create_class(&ALICE, vec![1, 2], ()),
+			Error::<Runtime>::MaxMetadataExceeded
+		);
+        assert_ok!(NonFungibleTokenModule::create_class(&ALICE, vec![1], ()));
+        assert_noop!(
+			NonFungibleTokenModule::mint(&BOB, CLASS_ID, vec![1, 2], ()),
+			Error::<Runtime>::MaxMetadataExceeded
+		);
+    });
+}
