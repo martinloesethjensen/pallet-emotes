@@ -1,47 +1,56 @@
 use std::collections::HashMap;
+use std::iter;
 
-// TODO: store binary instead of String as key
-fn populate_emojis() -> HashMap<u128, String> {
-    let mut mapping = HashMap::new();
-    mapping.insert(1u128, String::from("1f600"));
-    mapping.insert(10u128, String::from("1f603"));
-    mapping.insert(100u128, String::from("1f604"));
-    mapping.insert(1000u128, String::from("1f601"));
-    mapping.insert(10000u128, String::from("1f606"));
-    return mapping;
+
+//Mocked storage
+pub struct NftStorage {
+    emotes: HashMap<String, Vec<bool>>,
 }
 
-pub fn get_emotes_from_decimal(decimal: u128) -> Vec<String> {
-    let mapping = populate_emojis();
 
-    // decimal to binary string representation
-    let binary = format!("{:b}", decimal);
-
-    let _binary_u128 = binary.parse::<u128>().unwrap_or(0);
-
-    let mut emotes: Vec<String> = Vec::new();
-
-    let reversed_binary = binary.chars().rev();
-    for (i, bit) in reversed_binary.enumerate() {
-        match bit {
-            '1' => {
-                // We check with the index to see how much the binary u128 should be.
-                // If we are at the very first index, then it's `1` we need to query for.
-                // Else we do `10 ^ i` to get our bit representation for the mapping.
-                let binary_query = if i == 0 { 1 } else { 10_u128.checked_pow(i as u32).unwrap_or(u128::default()) };
-
-                match mapping.get(&binary_query) {
-                    Some(val) => emotes.push(val.into()),
-                    None => {
-                        // Something went wrong with querying for emojis.
-                        // Skip for now and don't do anything.
-                        // TODO: maybe throw error in pallet `NotFoundEmote`
-                    }
-                }
-            }
-            _ => {}
+impl NftStorage {
+    pub fn new() -> Self {
+        Self {
+            emotes: HashMap::new()
         }
     }
 
-    emotes
+    pub fn emote(&mut self, address: String, emote: &Vec<bool>) {
+        let user_has_already_emoted = self.emotes.contains_key(&address);
+
+
+        let mut old_emote_vec: &Vec<bool> = &Vec::new();
+
+        if user_has_already_emoted {
+            old_emote_vec = self.emotes.get(&address).unwrap();
+        }
+
+        let new_emote_vec = self.xor_emote_vec(&old_emote_vec, &emote);
+        self.emotes.insert(address, new_emote_vec);
+    }
+
+    pub fn get_emotes(&self) -> &HashMap<String, Vec<bool>> { &self.emotes }
+
+    fn xor_emote_vec(&self, old: &Vec<bool>, new: &Vec<bool>) -> Vec<bool> {
+        //We need to iterative through the vector which is the longest
+        let target = old.len() > new.len();
+
+        return match target {
+            true => self.xor_vec(old, new),
+            false => self.xor_vec(new, old)
+        };
+    }
+    fn xor_vec(&self, v1: &Vec<bool>, v2: &Vec<bool>) -> Vec<bool> {
+        v1.iter()
+            .zip(v2.iter().chain(iter::repeat(&false)))
+            .map(|(x1, x2)| x1 ^ x2)
+            .collect()
+    }
 }
+
+
+
+
+
+
+
