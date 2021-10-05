@@ -18,9 +18,9 @@ impl NftStorage {
     pub fn emote(&mut self, address: String, emote: &Vec<bool>) {
         let user_has_already_emoted = self.emotes.contains_key(&address);
 
-
         let mut old_emote_vec: &Vec<bool> = &Vec::new();
 
+        //If the user already voted on the NFT we need to fetch is previous emotes
         if user_has_already_emoted {
             old_emote_vec = self.emotes.get(&address).unwrap();
         }
@@ -42,6 +42,7 @@ impl NftStorage {
     }
     fn xor_vec(&self, v1: &Vec<bool>, v2: &Vec<bool>) -> Vec<bool> {
         v1.iter()
+            //we fill the shorter vec with false values
             .zip(v2.iter().chain(iter::repeat(&false)))
             .map(|(x1, x2)| x1 ^ x2)
             .collect()
