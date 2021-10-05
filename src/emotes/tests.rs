@@ -6,7 +6,7 @@ mod tests {
     use crate::emotes::mapping::{NftStorage};
 
     #[test]
-    fn example() {
+    fn stores_emote_of_an_address() {
         let mut storage = NftStorage::new();
         let emotes = storage.get_emotes();
 
@@ -19,15 +19,20 @@ mod tests {
         assert_eq!(emotes.len(), 1);
         assert_eq!(emotes.get(&String::from("0x1")).unwrap(), &vec![true])
     }
+    #[test]
+    fn keeps_existing_emotes() {
+        let mut storage = NftStorage::new();
+        let emotes = storage.get_emotes();
 
+        assert_eq!(emotes.len(), 0);
 
-    fn xor_vec(v1: &Vec<bool>, v2: &Vec<bool>) -> Vec<bool> {
-        let cmp = |(x1, x2)| {
-            x1 ^ x2
-        };
-        v1.iter()
-            .zip(v2.iter().chain(iter::repeat(&false)))
-            .map(cmp)
-            .collect()
+        storage.emote(String::from("0x1"), &vec![true, false, true]);
+        storage.emote(String::from("0x1"), &vec![false, false, false, true]);
+
+        let emotes = storage.get_emotes();
+        assert_eq!(emotes.len(), 1);
+        assert_eq!(emotes.get(&String::from("0x1")).unwrap(), &vec![true,false,true,true])
     }
+
+
 }
