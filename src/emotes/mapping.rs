@@ -4,6 +4,8 @@ use std::iter;
 
 //Mocked storage
 pub struct NftStorage {
+    //String -> Address of an user
+    //Vec<bool> -> The emotes of the certain address
     emotes: HashMap<String, Vec<bool>>,
 }
 
