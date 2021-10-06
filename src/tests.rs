@@ -193,3 +193,18 @@ fn exceeding_max_metadata_should_fail() {
 		);
     });
 }
+
+#[test]
+fn simple_binary_test() {
+    assert_eq!(format!("{:b}", 1), "1");
+    assert_eq!(format!("{:b}", 2), "10");
+    assert_eq!(format!("{:b}", 4), "100");
+    assert_eq!(format!("{:b}", 8), "1000");
+    assert_eq!(format!("{:b}", 10), "1010");
+    assert_eq!(format!("{:b}", 5), "101");
+}
+
+#[test]
+fn pow_math_test() {
+    assert_eq!(10_u128.checked_pow(2), Some(100));
+}
