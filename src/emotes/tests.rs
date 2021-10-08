@@ -3,7 +3,7 @@ mod tests {
     use std::iter;
     use codec::alloc::collections::HashMap;
     use frame_support::traits::Len;
-    use crate::emotes::mapping::{NftStorage};
+    use crate::emotes::nft_storage::{NftStorage};
 
     #[test]
     fn stores_emote_of_an_address() {
