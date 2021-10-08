@@ -33,6 +33,7 @@ mod mock;
 mod tests;
 mod emotes;
 
+
 /// Class info
 #[derive(Encode, Decode, Clone, Eq, PartialEq, MaxEncodedLen, RuntimeDebug)]
 pub struct ClassInfo<TokenId, AccountId, Data, ClassMetadataOf> {

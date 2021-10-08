@@ -1,2 +1,2 @@
 mod nft_storage;
-mod mapping;
+mod tests;
