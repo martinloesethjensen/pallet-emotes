@@ -25,7 +25,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{ensure, pallet_prelude::*, traits::Get, BoundedVec, Parameter};
 use sp_runtime::{
     traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Member, One, Zero},
-    ArithmeticError, DispatchError, DispatchResult, RuntimeDebug,
+    ArithmeticError, DispatchError, DispatchResult, RuntimeDebug, FixedU128,
 };
 use sp_std::{convert::TryInto, vec::Vec};
 
@@ -57,6 +57,15 @@ pub struct TokenInfo<AccountId, Data, TokenMetadataOf> {
     pub data: Data,
 }
 
+/// Emote Info
+#[derive(Encode, Decode, Clone, Eq, PartialEq, MaxEncodedLen, RuntimeDebug)]
+pub struct EmoteInfo<AccountId, EmoteData> {
+    /// Account emoted
+    pub account: AccountId,
+    /// Emoted data
+    pub emote_data: EmoteData,
+}
+
 pub use module::*;
 
 #[frame_support::pallet]
@@ -65,6 +74,13 @@ pub mod module {
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
+        /// The NFT ID type
+        type NftId: Parameter + Member + ToString + Default + Copy;
+        /// The emote properties type
+        type EmoteData: Parameter + Member + MaybeSerializeDeserialize;
+        /// The maximum size of an account's emote data
+        type MaxEmoteData: Get<FixedU128>;
+
         /// The class ID type
         type ClassId: Parameter + Member + AtLeast32BitUnsigned + Default + Copy;
         /// The token ID type
@@ -90,6 +106,14 @@ pub mod module {
     pub type TokenInfoOf<T> =
     TokenInfo<<T as frame_system::Config>::AccountId, <T as Config>::TokenData, TokenMetadataOf<T>>;
 
+    pub type EmoteDataOf<T> = BoundedVec<bool, <T as Config>::MaxEmoteData>;
+    pub type EmoteInfoOf<T> = EmoteInfo<
+        <T as frame_system::Config>::AccountId,
+        EmoteDataOf<T>,
+    >;
+
+    // TODO: Genesis emote mappings
+
     pub type GenesisTokenData<T> = (
         <T as frame_system::Config>::AccountId, // Token owner
         Vec<u8>,                                // Token metadata
@@ -105,6 +129,13 @@ pub mod module {
     /// Error for non-fungible-token module.
     #[pallet::error]
     pub enum Error<T> {
+        /// No emote found
+        EmoteNotFound,
+        /// No emoted NFT found
+        NftNotFound,
+        /// Failed as the maximum amount of emotes was exceeded
+        MaxEmoteDataExceeded,
+
         /// No available class ID
         NoAvailableClassId,
         /// No available token ID
@@ -147,6 +178,15 @@ pub mod module {
     pub type Tokens<T: Config> =
     StorageDoubleMap<_, Twox64Concat, T::ClassId, Twox64Concat, T::TokenId, TokenInfoOf<T>>;
 
+    /// Store Nft emotes info.
+    ///
+    /// Returns `None` if nft emote info not set or removed.
+    #[pallet::storage]
+    #[pallet::getter(fn emotes)]
+    pub type Emotes<T: Config> = StorageDoubleMap<_, Twox64Concat, T::NftId, Twox64Concat, <T as frame_system::Config>::AccountId, Vec<bool>>;
+
+    // TODO: EmotesByAccount
+
     /// Token existence check by owner and class ID.
     #[pallet::storage]
     #[pallet::getter(fn tokens_by_owner)]
@@ -173,6 +213,8 @@ pub mod module {
         }
     }
 
+    // TODO: genesis build with emote mappings
+
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
@@ -198,6 +240,23 @@ pub mod module {
 }
 
 impl<T: Config> Pallet<T> {
+    // TODO: emote fn
+    // 1. try getting nft that should be emoted
+    // 2. on `AccountId` emote using the xor logic
+
+    // TODO: remove_account fn
+    // Clean emotes on an nft from storage on a specific `AccountId`
+
+    // TODO: remove_nft fn
+    // Remove nft and it's emotes from storage
+
+    // TODO: total_emotes_on_nft
+    // count all true ("emoted representation") values for each `AccountId` on an nft
+    // return `u8` or something
+
+    // TODO: xor fn
+    // Flipping vec values using xor
+
     /// Create NFT(non fungible token) class
     pub fn create_class(
         owner: &T::AccountId,

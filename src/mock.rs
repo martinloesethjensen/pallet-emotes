@@ -46,9 +46,14 @@ impl frame_system::Config for Runtime {
 parameter_types! {
 	pub const MaxClassMetadata: u32 = 1;
 	pub const MaxTokenMetadata: u32 = 1;
+    pub const MaxEmoteData: FixedU128 = FixedU128::from_inner(1);
+    pub const NftId: String = 1.to_string();
 }
 
 impl Config for Runtime {
+    type NftId = NftId;
+    type EmoteData = ();
+    type MaxEmoteData = MaxEmoteData;
     type ClassId = u64;
     type TokenId = u64;
     type ClassData = ();
