@@ -2,6 +2,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod emotes;
+
 use frame_support::traits::{Currency, ReservableCurrency};
 pub use pallet::*;
 use sp_std::prelude::*;
@@ -14,6 +16,7 @@ pub mod pallet {
     use super::*;
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
+
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
@@ -65,6 +68,7 @@ mod tests {
         testing::Header,
         traits::{BadOrigin, BlakeTwo256, IdentityLookup},
     };
+
 
     type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
     type Block = frame_system::mocking::MockBlock<Test>;
@@ -153,7 +157,11 @@ mod tests {
 
     #[test]
     fn test() {
+        let map = emotes::mapping::mapping::get_mapping();
+
+        let first = map.1.get("0").unwrap();
+
         println!("it works");
-        assert_eq!(true, true);
+        assert_eq!(first, "1f600");
     }
 }

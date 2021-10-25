@@ -1189,13 +1189,15 @@ dependencies = [
 
 [[package]]
 name = "pallet-emotes"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "frame-support",
  "frame-system",
  "pallet-balances",
  "parity-scale-codec",
  "scale-info",
+ "serde",
+ "serde_json",
  "sp-core",
  "sp-io",
  "sp-runtime",
