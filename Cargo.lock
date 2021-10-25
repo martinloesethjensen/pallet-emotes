@@ -1189,7 +1189,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-emotes"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "frame-support",
  "frame-system",

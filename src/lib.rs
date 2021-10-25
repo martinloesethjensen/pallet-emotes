@@ -7,7 +7,7 @@ pub use pallet::*;
 use sp_std::prelude::*;
 
 type BalanceOf<T> =
-    <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -25,8 +25,7 @@ pub mod pallet {
     }
 
     #[pallet::event]
-    #[pallet::generate_deposit(pub(super) fn deposit_event)]
-
+    #[pallet::generate_deposit(pub (super) fn deposit_event)]
     pub enum Event<T: Config> {
         //RMRK_Example_Event(T::AccountId),
     }
@@ -40,16 +39,16 @@ pub mod pallet {
     /// The lookup table for names.
     #[pallet::storage]
     pub(super) type NameOf<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, (Vec<u8>, BalanceOf<T>)>;
+    StorageMap<_, Twox64Concat, T::AccountId, (Vec<u8>, BalanceOf<T>)>;
 
     #[pallet::pallet]
-    #[pallet::generate_store(pub(super) trait Store)]
+    #[pallet::generate_store(pub (super) trait Store)]
     pub struct Pallet<T>(_);
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(50_000_000)]
-        pub fn hello_rmrk(origin: OriginFor<T>) -> DispatchResult {
+        pub fn hello_emotes(origin: OriginFor<T>) -> DispatchResult {
             Ok(())
         }
     }
@@ -143,13 +142,15 @@ mod tests {
         type Currency = Balances;
         type Event = Event;
     }
+
     fn new_test_ext() -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-		pallet_balances::GenesisConfig::<Test> { balances: vec![(1, 10), (2, 10)] }
-			.assimilate_storage(&mut t)
-			.unwrap();
-		t.into()
-	}
+        let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+        pallet_balances::GenesisConfig::<Test> { balances: vec![(1, 10), (2, 10)] }
+            .assimilate_storage(&mut t)
+            .unwrap();
+        t.into()
+    }
+
     #[test]
     fn test() {
         println!("it works");
